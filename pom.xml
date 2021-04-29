@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>io.narayana.ochaloup</groupId>
+  <artifactId>datasource-test-jdbc-objectstore</artifactId>
+  <version>1.0.0-SNAPSHOT</version>
+  <packaging>war</packaging>
+  <properties>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+    <version.org.jboss.security.negotiation>3.0.6.Final</version.org.jboss.security.negotiation>
+  </properties>
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <!-- Including: https://search.maven.org/artifact/org.jboss.spec/jboss-javaee-7.0/1.1.1.Final/pom -->
+        <groupId>org.wildfly.bom</groupId>
+        <artifactId>wildfly-javaee7-with-tools</artifactId>
+        <version>13.0.0.Final</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+  <dependencies>
+    <dependency>
+      <groupId>org.jboss.spec.javax.annotation</groupId>
+      <artifactId>jboss-annotations-api_1.2_spec</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.spec.javax.servlet</groupId>
+      <artifactId>jboss-servlet-api_3.1_spec</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.spec.javax.ejb</groupId>
+      <artifactId>jboss-ejb-api_3.2_spec</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.spec.javax.transaction</groupId>
+      <artifactId>jboss-transaction-api_1.2_spec</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.logging</groupId>
+      <artifactId>jboss-logging</artifactId>
+      <scope>provided</scope>
+    </dependency>
+
+    <!-- IJ dependencies for wrapper DS -->
+    <dependency>
+      <groupId>org.jboss.ironjacamar</groupId>
+      <artifactId>ironjacamar-jdbc</artifactId>
+      <scope>provided</scope>
+      <version>1.4.32.Final</version>
+    </dependency>
+
+    <!-- Test XAResource from WildFly testuite -->
+    <dependency>
+      <groupId>org.wildfly</groupId>
+      <artifactId>wildfly-testsuite-shared</artifactId>
+      <version>23.0.1.Final</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency> <!-- dependencies needed by shared of the testsuite -->
+      <groupId>org.jboss.security</groupId>
+      <artifactId>jboss-negotiation-extras</artifactId>
+      <version>${version.org.jboss.security.negotiation}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.security</groupId>
+      <artifactId>jboss-negotiation-common</artifactId>
+      <version>${version.org.jboss.security.negotiation}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.security</groupId>
+      <artifactId>jboss-negotiation-spnego</artifactId>
+      <version>${version.org.jboss.security.negotiation}</version>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <finalName>eap-datasource</finalName>
+    <plugins>
+      <plugin>
+        <artifactId>maven-war-plugin</artifactId>
+        <version>2.4</version>
+        <configuration>
+          <failOnMissingWebXml>false</failOnMissingWebXml>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+</project>

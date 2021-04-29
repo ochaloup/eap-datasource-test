@@ -1,0 +1,98 @@
+= How to test with this
+
+== Working with PostgreSQL means running it
+
+[source,bash]
+----
+docker run -p 5432:5432 --name pgdemodb --rm -ePOSTGRES_DB=test -ePOSTGRES_USER=test \
+  -ePOSTGRES_PASSWORD=test postgres:9.4 -c max-prepared-transactions=110 -c log-statement=all
+----
+
+Downloading driver at https://jdbc.postgresql.org/
+
+[source,bash]
+----
+wget https://jdbc.postgresql.org/download/postgresql-42.2.20.jar -O /tmp/postgresql.jar
+----
+
+== Configuring the EAP
+
+Working with JBoss EAP 7.2.9
+
+[source,bash]
+----
+cd $JBOSS_HOME
+
+# driver as a module
+./bin/jboss-cli.sh "embed-server --server-config=standalone.xml, module add --name=org.postgresql --resources=/tmp/postgresql.jar --dependencies=javax.api\,javax.transaction.api"
+./bin/jboss-cli.sh "embed-server --server-config=standalone.xml,/subsystem=datasources/jdbc-driver=postgresql:add(driver-name=postgresql,driver-module-name=org.postgresql,driver-xa-datasource-class-name=org.postgresql.xa.PGXADataSource)"
+
+# JDBC object store non-jta datasource
+./bin/jboss-cli.sh "embed-server --server-config=standalone.xml,data-source add --name=JDBCStore --jndi-name=java:jboss/datasources/jdbcstore_postgresql --jta=false --connection-url=jdbc:postgresql://localhost:5432/test --user-name=test --password=test --driver-name=postgresql"
+
+# transaction subsystem configuration
+./bin/jboss-cli.sh "embed-server --server-config=standalone.xml,/subsystem=transactions:write-attribute(name=jdbc-store-datasource, value=java:jboss/datasources/jdbcstore_postgresql), /subsystem=transactions:write-attribute(name=use-jdbc-store,value=true)"
+
+# create an XAResource
+./bin/jboss-cli.sh "embed-server --server-config=standalone.xml,xa-data-source add --name=xaDs --driver-name=postgresql --jndi-name=java:jboss/datasources/xaDs --user-name=test --password=test --xa-datasource-properties=ServerName=localhost,/subsystem=datasources/xa-data-source=xaDs/xa-datasource-properties=PortNumber:add(value=5432),/subsystem=datasources/xa-data-source=xaDs/xa-datasource-properties=DatabaseName:add(value=test)"
+
+# optional for logging
+./bin/jboss-cli.sh "embed-server --server-config=standalone.xml,/subsystem=logging/logger=com.arjuna:write-attribute(name=level, value=TRACE)"
+----
+
+[NOTE]
+====
+Copying the driver jar inside of the `standalone/deployments` directory does not work
+with JDBC object store (i.e. `cp /tmp/postgresql.jar standalone/deployments/`). The JDBC
+object store datasource needs the driver to be a module.
+Having it as only `jar` file emits startup errors.
+
+----
+12:11:32,499 ERROR [org.jboss.as.controller.management-operation] (Controller Boot Thread) WFLYCTL0013: Operation ("add") failed - address: ([
+    ("subsystem" => "datasources"),
+    ("data-source" => "JDBCStore")
+]) - failure description: {
+    "WFLYCTL0412: Required services that are not installed:" => ["jboss.jdbc-driver.postgresql_jar"],
+    "WFLYCTL0180: Services with missing/unavailable dependencies" => [
+        "jboss.driver-demander.java:jboss/datasources/jdbcstore_postgresql is missing [jboss.jdbc-driver.postgresql_jar]",
+        "org.wildfly.data-source.JDBCStore is missing [jboss.jdbc-driver.postgresql_jar]"
+    ]
+}
+12:11:32,501 ERROR [org.jboss.as.controller.management-operation] (Controller Boot Thread) WFLYCTL0013: Operation ("add") failed - address: ([
+    ("subsystem" => "datasources"),
+    ("data-source" => "JDBCStore")
+]) - failure description: {
+    "WFLYCTL0412: Required services that are not installed:" => [
+        "jboss.jdbc-driver.postgresql_jar",
+        "jboss.jdbc-driver.postgresql_jar"
+    ],
+    "WFLYCTL0180: Services with missing/unavailable dependencies" => [
+        "jboss.driver-demander.java:jboss/datasources/jdbcstore_postgresql is missing [jboss.jdbc-driver.postgresql_jar]",
+        "org.wildfly.data-source.JDBCStore is missing [jboss.jdbc-driver.postgresql_jar]",
+        "org.wildfly.data-source.JDBCStore is missing [jboss.jdbc-driver.postgresql_jar]"
+    ]
+}
+----
+====
+
+== Deploy the testing `war`
+
+[source,bash]
+----
+# go to current dirrectory where this README.adoc resides
+mvn clean install
+cp target/eap-datasource.war $JBOSS_HOME/standalone/deployments/
+
+cd $JBOSS_HOME
+./bin/standalone.sh &
+
+curl -i  http://localhost:8080/eap-datasource/
+----
+
+=== Verify the PostgreSQL
+
+[source,bash]
+----
+SELECT gid FROM pg_prepared_xacts
+SELECT * FROM JBossTSTxTable
+----
