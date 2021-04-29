@@ -84,9 +84,10 @@ mvn clean install
 cp target/eap-datasource.war $JBOSS_HOME/standalone/deployments/
 
 cd $JBOSS_HOME
-./bin/standalone.sh &
+./bin/standalone.sh -Djboss.tx.node.id=test1
 
-curl -i  http://localhost:8080/eap-datasource/
+curl -i  http://localhost:8080/eap-datasource/?crash
+curl -i  http://localhost:8080/eap-datasource/?recover
 ----
 
 === Verify the PostgreSQL
