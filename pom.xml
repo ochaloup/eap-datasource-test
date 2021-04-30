@@ -52,12 +52,19 @@
     </dependency>
 
     <!-- IJ dependencies for wrapper DS -->
-    <dependency>
+    <dependency> <!-- org.jboss.jca.adapters.jdbc.WrapperDataSource -->
       <groupId>org.jboss.ironjacamar</groupId>
       <artifactId>ironjacamar-jdbc</artifactId>
       <scope>provided</scope>
       <version>1.4.22.Final</version>
     </dependency>
+    <dependency> <!-- org.jboss.as.connector.subsystems.datasources.WildFlyDataSource  -->
+      <groupId>org.wildfly</groupId>
+      <artifactId>wildfly-connector</artifactId>
+      <version>16.0.0.Final</version>
+      <scope>provided</scope>
+    </dependency>
+
 
     <!-- Test XAResource from WildFly testuite -->
     <dependency>

@@ -6,7 +6,9 @@ import org.jboss.logging.Logger;
 
 import javax.naming.InitialContext;
 import javax.sql.DataSource;
+import javax.sql.XAConnection;
 import javax.transaction.xa.XAResource;
+import org.jboss.as.connector.subsystems.datasources.WildFlyDataSource;
 
 public class RecoveryHelper {
     private static final Logger log = Logger.getLogger(RecoveryHelper.class);
@@ -15,16 +17,28 @@ public class RecoveryHelper {
         try {
             log.info("getting XA resource of " + datasourceName + " datasource");
             DataSource ds = (DataSource) new InitialContext().lookup(datasourceName);
-            WrapperDataSource wds = (WrapperDataSource) ds;
-            WrappedConnection connection = (WrappedConnection) wds.getConnection();
 
-            if (!connection.isXA()) {
-                throw new RuntimeException("Datasource " + datasourceName + " does not seem to be an XADataSource!");
+            WrappedConnection connection = null;
+            if (ds instanceof WrapperDataSource) {
+                // IronJacamar direct stuff
+                WrapperDataSource wds = (WrapperDataSource) ds;
+                connection = (WrappedConnection) wds.getConnection();
+            } else if (ds instanceof WildFlyDataSource) {
+                WildFlyDataSource wflyds = (WildFlyDataSource) ds;
+                if (wflyds.getConnection() instanceof WrappedConnection) {
+                    connection = (WrappedConnection) wflyds.getConnection();
+                }
+                if (wflyds.getConnection().isWrapperFor(XAConnection.class)) {
+                    return ((XAConnection) wflyds.getConnection()).getXAResource();
+                }
             }
-            return connection.getXAResource();
+            if (connection.isXA()) {
+                return connection.getXAResource();
+            }
         } catch (Exception e) {
             log.warn("Cannot get an XAResource of " + datasourceName + " datasource", e);
             throw e;
         }
+        throw new IllegalStateException("Cannot find a way how to get XAResource from the datasource " + datasourceName);
     }
 }

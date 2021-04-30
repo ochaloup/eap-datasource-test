@@ -30,7 +30,7 @@ public class ServletCallTest extends HttpServlet {
             ejb.crashWithPreparedTxn();
         }
         if(request.getQueryString().contains("recover")) {
-            ejb.recover();
+            ejb.recover(DatasourceEjb.JNDI_XA_DS);
         }
     }
 }

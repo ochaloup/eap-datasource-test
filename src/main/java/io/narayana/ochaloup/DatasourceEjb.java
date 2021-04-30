@@ -1,5 +1,7 @@
 package io.narayana.ochaloup;
 
+import com.arjuna.ats.jta.xa.XATxConverter;
+import com.arjuna.ats.jta.xa.XidImple;
 import org.jboss.as.test.integration.transactions.TestXAResource;
 import org.jboss.logging.Logger;
 
@@ -14,7 +16,7 @@ import java.sql.Statement;
 @Stateless
 public class DatasourceEjb {
     private static final Logger log = Logger.getLogger(DatasourceEjb.class);
-    private static final String JNDI_XA_DS = "java:jboss/datasources/xaDs";
+    public static final String JNDI_XA_DS = "java:jboss/datasources/xaDs";
 
     @Resource(lookup = "java:/TransactionManager")
     private TransactionManager tm;
@@ -38,16 +40,26 @@ public class DatasourceEjb {
         }
     }
 
-    public void recover() {
+    public void recover(String datasourceJndiName) {
+        XAResource xaer = null;
         try {
-            Xid[] xids = RecoveryHelper.getNewXAResource(JNDI_XA_DS).recover(XAResource.TMSTARTRSCAN & XAResource.TMENDRSCAN);
+            xaer = RecoveryHelper.getNewXAResource(datasourceJndiName);
+            Xid[] xids = xaer.recover(XAResource.TMSTARTRSCAN);
             int i = 1;
-            log.infof("Number of xids: %n", xids.length);
+            log.infof("Number of xids: %d", xids.length);
             for (Xid xid : xids) {
-                log.infof("[%n] %s", i, xid);
+                log.infof("[%d] %s | %s", i, xid, new XidImple(xid));
             }
         } catch (Exception e) {
             throw new RuntimeException("Error on list Xids", e);
+        } finally {
+            if (xaer != null) {
+                try {
+                    xaer.recover(XAResource.TMENDRSCAN);
+                } catch (Exception recoverene) {
+                    log.warnf(recoverene,"Trouble to end the recover on XAResource of '%s'", datasourceJndiName);
+                }
+            }
         }
     }
 }

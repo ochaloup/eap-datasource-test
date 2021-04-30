@@ -1,2 +1,2 @@
 Manifest-Version: 1.0
-Dependencies: org.jboss.ironjacamar.jdbcadapters
+Dependencies: org.jboss.ironjacamar.jdbcadapters,org.jboss.jts,org.jboss.jboss-transaction-spi,org.jboss.as.connector
