@@ -1,5 +1,6 @@
 package io.narayana.ochaloup;
 
+import com.arjuna.ats.internal.arjuna.FormatConstants;
 import com.arjuna.ats.jta.xa.XATxConverter;
 import com.arjuna.ats.jta.xa.XidImple;
 import org.jboss.as.test.integration.transactions.TestXAResource;
@@ -48,7 +49,12 @@ public class DatasourceEjb {
             int i = 1;
             log.infof("Number of xids: %d", xids.length);
             for (Xid xid : xids) {
-                log.infof("[%d] %s | %s", i, xid, new XidImple(xid));
+                if (xid.getFormatId() == FormatConstants.JTA_FORMAT_ID) {
+                    XidImple xidImple = new XidImple(xid);
+                    log.infof("[%d] %s | %s | %s", i, xid, xidImple, xidImple.getXID());
+                } else {
+                    log.infof("[%d] %s (not an Narayana JTA xid)", i, xid);
+                }
             }
         } catch (Exception e) {
             throw new RuntimeException("Error on list Xids", e);
