@@ -1,14 +1,12 @@
 package io.narayana.ochaloup;
 
 import com.arjuna.ats.internal.arjuna.FormatConstants;
-import com.arjuna.ats.jta.xa.XATxConverter;
 import com.arjuna.ats.jta.xa.XidImple;
 import org.jboss.as.test.integration.transactions.TestXAResource;
 import org.jboss.logging.Logger;
 
 import javax.annotation.Resource;
 import javax.ejb.Stateless;
-import javax.sql.DataSource;
 import javax.transaction.TransactionManager;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
@@ -17,14 +15,10 @@ import java.sql.Statement;
 @Stateless
 public class DatasourceEjb {
     private static final Logger log = Logger.getLogger(DatasourceEjb.class);
-    public static final String JNDI_XA_DS = "java:jboss/datasources/xaDs";
 
     @Resource(lookup = "java:/TransactionManager")
     private TransactionManager tm;
 
-    @Resource(lookup = JNDI_XA_DS)
-    private DataSource datasource;
-    
     public void crashWithPreparedTxn() {
         try {
             TestXAResource testXAResource = new TestXAResource(TestXAResource.TestAction.COMMIT_CRASH_VM);
@@ -34,7 +28,7 @@ public class DatasourceEjb {
             throw new RuntimeException("Cannot enlist", e);
         }
 
-        try (Statement st = datasource.getConnection().createStatement()) {
+        try (Statement st = DatasourceUtils.getXADs().getConnection().createStatement()) {
             st.execute("insert into test values ('TESTING')");
         } catch (Exception e) {
             throw new RuntimeException("Error on inserting data to table 'test'", e);

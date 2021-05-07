@@ -4,7 +4,6 @@ import org.jboss.jca.adapters.jdbc.WrappedConnection;
 import org.jboss.jca.adapters.jdbc.WrapperDataSource;
 import org.jboss.logging.Logger;
 
-import javax.naming.InitialContext;
 import javax.sql.DataSource;
 import javax.sql.XAConnection;
 import javax.transaction.xa.XAResource;
@@ -16,7 +15,7 @@ public class RecoveryHelper {
     public static XAResource getNewXAResource(String datasourceName) throws Exception {
         try {
             log.info("getting XA resource of " + datasourceName + " datasource");
-            DataSource ds = (DataSource) new InitialContext().lookup(datasourceName);
+            DataSource ds = DatasourceUtils.getXADs(datasourceName);
 
             WrappedConnection connection = null;
             if (ds instanceof WrapperDataSource) {
