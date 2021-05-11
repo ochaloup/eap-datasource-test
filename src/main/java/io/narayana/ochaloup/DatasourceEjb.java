@@ -2,7 +2,6 @@ package io.narayana.ochaloup;
 
 import com.arjuna.ats.internal.arjuna.FormatConstants;
 import com.arjuna.ats.jta.xa.XidImple;
-import org.jboss.as.test.integration.transactions.TestXAResource;
 import org.jboss.logging.Logger;
 
 import javax.annotation.Resource;

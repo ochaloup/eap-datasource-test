@@ -9,7 +9,7 @@ public final class DatasourceUtils {
         // no instantiate
     }
 
-    public static String JNDI_XA_DS = System.getProperty("xa.ds.jndi.name", "java:jboss/datasources/xaDs");
+    public static final String JNDI_XA_DS = System.getProperty("xa.ds.jndi.name", "java:jboss/datasources/xaDs");
 
     public static DataSource getXADs(String xaDs) {
         try {

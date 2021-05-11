@@ -34,8 +34,17 @@ public class ServletCallTest extends HttpServlet {
         if(request.getQueryString().contains("recover")) {
             ejbDs.recover(DatasourceUtils.JNDI_XA_DS);
         }
-        if(request.getQueryString().contains("sleep")) {
-            ejbLongTx.runLong();
+        if(request.getQueryString().contains("sleep_in")) {
+            ejbLongTx.runLong(LongRunningTransaction.Action.WAIT_IN);
+        }
+        if(request.getQueryString().contains("sleep_ejb")) {
+            ejbLongTx.runLong(LongRunningTransaction.Action.WAIT_IN_EJB);
+        }
+        if(request.getQueryString().contains("sleep_prepare")) {
+            ejbLongTx.runLong(LongRunningTransaction.Action.WAIT_PREPARE);
+        }
+        if(request.getQueryString().contains("sleep_commit")) {
+            ejbLongTx.runLong(LongRunningTransaction.Action.WAIT_COMMIT);
         }
     }
 }

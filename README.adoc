@@ -38,6 +38,9 @@ cd $JBOSS_HOME
 
 # optional for logging
 ./bin/jboss-cli.sh "embed-server --server-config=standalone.xml,/subsystem=logging/logger=com.arjuna:write-attribute(name=level, value=TRACE)"
+
+# optional ejb subsystem graceful shutdown
+./bin/jboss-cli.sh "embed-server --server-config=standalone.xml,/subsystem=ejb3:write-attribute(name=enable-graceful-txn-shutdown, value=true)"
 ----
 
 [NOTE]
@@ -88,6 +91,7 @@ cd $JBOSS_HOME
 
 curl -i  http://localhost:8080/eap-datasource/?crash
 curl -i  http://localhost:8080/eap-datasource/?recover
+curl -i  http://localhost:8080/eap-datasource/?sleep
 ----
 
 === Verify the PostgreSQL

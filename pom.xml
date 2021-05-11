@@ -13,7 +13,6 @@
 
     <version.org.jboss.security.negotiation>3.0.6.Final</version.org.jboss.security.negotiation>
     <version.wildfly.bom>16.0.0.Final</version.wildfly.bom>
-    <version.wildfly.testsuite>23.0.1.Final</version.wildfly.testsuite>
     <version.ironjacamar>1.4.22.Final</version.ironjacamar>
 
     <version.maven.war.plugin>3.3.1</version.maven.war.plugin>
@@ -69,30 +68,6 @@
       <artifactId>wildfly-connector</artifactId>
       <version>${version.wildfly.bom}</version>
       <scope>provided</scope>
-    </dependency>
-
-
-    <!-- Test XAResource from WildFly testuite -->
-    <dependency>
-      <groupId>org.wildfly</groupId>
-      <artifactId>wildfly-testsuite-shared</artifactId>
-      <version>${version.wildfly.testsuite}</version>
-      <scope>compile</scope>
-    </dependency>
-    <dependency> <!-- dependencies needed by shared of the testsuite -->
-      <groupId>org.jboss.security</groupId>
-      <artifactId>jboss-negotiation-extras</artifactId>
-      <version>${version.org.jboss.security.negotiation}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.jboss.security</groupId>
-      <artifactId>jboss-negotiation-common</artifactId>
-      <version>${version.org.jboss.security.negotiation}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.jboss.security</groupId>
-      <artifactId>jboss-negotiation-spnego</artifactId>
-      <version>${version.org.jboss.security.negotiation}</version>
     </dependency>
   </dependencies>
 
