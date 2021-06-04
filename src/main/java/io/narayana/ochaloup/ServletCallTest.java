@@ -28,6 +28,9 @@ public class ServletCallTest extends HttpServlet {
         PrintWriter out = response.getWriter();
         out.println("Testing " + new Date());
 
+        if (request.getQueryString() == null || request.getQueryString().isEmpty()) {
+            return;
+        }
         if(request.getQueryString().contains("crash")) {
             ejbDs.crashWithPreparedTxn();
         }
