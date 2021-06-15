@@ -6,10 +6,13 @@ import org.jboss.logging.Logger;
 
 import javax.annotation.Resource;
 import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import javax.transaction.TransactionManager;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 import java.sql.Statement;
+import java.util.Locale;
 
 @Stateless
 public class DatasourceEjb {
@@ -19,14 +22,31 @@ public class DatasourceEjb {
     private TransactionManager tm;
 
     public void crashWithPreparedTxn() {
+        justRun(TestXAResource.TestAction.COMMIT_CRASH_VM.name(), "crashWithPreparedTxn");
+    }
+
+    public void justRun(String testXAResourceTestActionName, String dataString) {
+        TestXAResource.TestAction testAction = TestXAResource.TestAction.NONE;
         try {
-            TestXAResource testXAResource = new TestXAResource(TestXAResource.TestAction.COMMIT_CRASH_VM);
+            if (testXAResourceTestActionName != null && !testXAResourceTestActionName.isEmpty())
+                testAction = TestXAResource.TestAction.valueOf(testXAResourceTestActionName.toUpperCase(Locale.ROOT));
+        } catch (Exception e) {
+            throw new IllegalStateException("Cannot convert provided test action name '" + testXAResourceTestActionName
+                    + "' to TestXAResource.TestAction enum", e);
+        }
+
+        try {
+            TestXAResource testXAResource = new TestXAResource(testAction);
             log.info("transaction: " + tm.getTransaction());
             tm.getTransaction().enlistResource(testXAResource);
         } catch (Exception e) {
             throw new RuntimeException("Cannot enlist", e);
         }
 
+        insertData(dataString == null ? "TESTING" : dataString);
+    }
+
+    private void insertData(String dataString) {
         try (Statement st = DatasourceUtils.getXADs().getConnection().createStatement()) {
             st.execute("insert into test values ('TESTING')");
         } catch (Exception e) {
@@ -34,6 +54,7 @@ public class DatasourceEjb {
         }
     }
 
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     public void recover(String datasourceJndiName) {
         XAResource xaer = null;
         try {

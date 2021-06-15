@@ -31,23 +31,23 @@ public class ServletCallTest extends HttpServlet {
         if (request.getQueryString() == null || request.getQueryString().isEmpty()) {
             return;
         }
-        if(request.getQueryString().contains("crash")) {
+
+        // call:
+        // curl -i localhost:8080/eap-datasource/?recover
+        if (request.getQueryString().contains("crash")) {
             ejbDs.crashWithPreparedTxn();
-        }
-        if(request.getQueryString().contains("recover")) {
+        } else if (request.getQueryString().contains("recover")) {
             ejbDs.recover(DatasourceUtils.JNDI_XA_DS);
-        }
-        if(request.getQueryString().contains("sleep_in")) {
+        } else if (request.getQueryString().contains("sleep_in")) {
             ejbLongTx.runLong(LongRunningTransaction.Action.WAIT_IN);
-        }
-        if(request.getQueryString().contains("sleep_ejb")) {
+        } else if (request.getQueryString().contains("sleep_ejb")) {
             ejbLongTx.runLong(LongRunningTransaction.Action.WAIT_IN_EJB);
-        }
-        if(request.getQueryString().contains("sleep_prepare")) {
+        } else if (request.getQueryString().contains("sleep_prepare")) {
             ejbLongTx.runLong(LongRunningTransaction.Action.WAIT_PREPARE);
-        }
-        if(request.getQueryString().contains("sleep_commit")) {
+        } else if (request.getQueryString().contains("sleep_commit")) {
             ejbLongTx.runLong(LongRunningTransaction.Action.WAIT_COMMIT);
+        } else {
+            ejbDs.justRun(request.getQueryString(), request.getQueryString());
         }
     }
 }
