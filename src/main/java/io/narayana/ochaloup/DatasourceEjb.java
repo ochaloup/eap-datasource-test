@@ -35,6 +35,9 @@ public class DatasourceEjb {
                     + "' to TestXAResource.TestAction enum", e);
         }
 
+
+        insertData(dataString == null ? "TESTING" : dataString);
+
         try {
             TestXAResource testXAResource = new TestXAResource(testAction);
             log.info("transaction: " + tm.getTransaction());
@@ -42,8 +45,6 @@ public class DatasourceEjb {
         } catch (Exception e) {
             throw new RuntimeException("Cannot enlist", e);
         }
-
-        insertData(dataString == null ? "TESTING" : dataString);
     }
 
     private void insertData(String dataString) {
