@@ -18,9 +18,11 @@ public class TestXAResource implements XAResource {
         NONE,
 
         PREPARE_THROW_XAER_RMERR, PREPARE_THROW_XAER_RMFAIL, PREPARE_THROW_UNKNOWN_XA_EXCEPTION, PREPARE_CRASH_VM,
+        PREPARE_THROW_XAER_RMERR_AFTER, PREPARE_THROW_XAER_RMFAIL_AFTER, PREPARE_THROW_UNKNOWN_XA_EXCEPTION_AFTER,
         PREPARE_SLEEP_15S,
 
         COMMIT_THROW_XAER_RMERR, COMMIT_THROW_XAER_RMFAIL, COMMIT_THROW_UNKNOWN_XA_EXCEPTION, COMMIT_CRASH_VM,
+        COMMIT_THROW_XAER_RMERR_AFTER, COMMIT_THROW_XAER_RMFAIL_AFTER, COMMIT_THROW_UNKNOWN_XA_EXCEPTION_AFTER,
         COMMIT_SLEEP_15S,
     }
 
@@ -63,12 +65,25 @@ public class TestXAResource implements XAResource {
                     throw new IllegalStateException(ie);
                 }
                 // intentionally fall-through !
-            case NONE:
             default:
-                preparedXids.add(xid);
-                log.infof("prepare xid: [%s], test action: %s finished", xid, testAction);
-                return XAResource.XA_OK;
+                // this is fine, going out of the switch to prepare
         }
+
+        preparedXids.add(xid);
+        log.infof("prepare xid: [%s], test action: %s finished", xid, testAction);
+
+        switch (testAction) {
+            case PREPARE_THROW_XAER_RMERR_AFTER:
+                throw new XAException(XAException.XAER_RMERR);
+            case PREPARE_THROW_XAER_RMFAIL_AFTER:
+                throw new XAException(XAException.XAER_RMFAIL);
+            case PREPARE_THROW_UNKNOWN_XA_EXCEPTION_AFTER:
+                throw new XAException(null);
+            default:
+                // doing nothing
+        }
+
+        return XAResource.XA_OK;
     }
 
     @Override
@@ -93,11 +108,23 @@ public class TestXAResource implements XAResource {
                     throw new IllegalStateException(ie);
                 }
                 // intentionally fall-through !
-            case NONE:
             default:
-                preparedXids.remove(xid);
+                // fine to do nothing
         }
+
+        preparedXids.remove(xid);
         log.infof("commit xid:[%s], %s one phase, test action: %s was finished", xid, onePhase ? "with" : "without", testAction);
+
+        switch (testAction) {
+            case COMMIT_THROW_XAER_RMERR_AFTER:
+                throw new XAException(XAException.XAER_RMERR);
+            case COMMIT_THROW_XAER_RMFAIL_AFTER:
+                throw new XAException(XAException.XAER_RMFAIL);
+            case COMMIT_THROW_UNKNOWN_XA_EXCEPTION_AFTER:
+                throw new XAException(null);
+            default:
+                // doing nothing
+        }
     }
 
     @Override
